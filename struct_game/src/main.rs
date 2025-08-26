@@ -101,6 +101,8 @@ fn create_player_from_stdin(player_number: u32) -> Player {
             .read_line(&mut choice_inv)
             .expect("Please enter a valid number");
 
+        choice_inv = choice_inv.trim().to_string();
+
         if choice_inv == "1" {
             return Player::new(
                 name,
@@ -140,6 +142,6 @@ fn main() {
     let player1 = create_player_from_stdin(1);
     let player2 = create_player_from_stdin(2);
 
-    println!("Player {player1}");
-    println!("Player {player2}");
+    println!("{player1}");
+    println!("{player2}");
 }
