@@ -1,6 +1,8 @@
 use rand::{self, Rng, random_bool};
 use std::{fmt, io};
 
+const MAX_HEALTH: i32 = 100;
+
 #[derive(Debug)]
 enum ItemType {
     Health,
@@ -12,6 +14,7 @@ struct Player {
     name: String,
     health: i32,
     next_tour: i32,
+    dodge: bool,
     inventory: Vec<Item>,
 }
 
@@ -26,8 +29,9 @@ impl Player {
     fn new(name: String, invetory: Vec<Item>) -> Player {
         Player {
             name: name,
-            health: 100,
+            health: MAX_HEALTH,
             next_tour: 0,
+            dodge: false,
             inventory: invetory,
         }
     }
@@ -36,7 +40,7 @@ impl Player {
         rand::rng().random_range(0..=15) + self.next_tour
     }
 
-    fn dodge() -> bool {
+    fn dodge(&self) -> bool {
         random_bool(0.5)
     }
 
@@ -138,10 +142,76 @@ fn create_player_from_stdin(player_number: u32) -> Player {
     }
 }
 
+fn play_tour(player: &mut Player, opponent: &mut Player) {
+    println!(
+        "It's your turn {} ! Choose your option (your health is : {})",
+        player.name, player.health
+    );
+    println!("1. Attack");
+    println!("2. Dodge next attack");
+    if !player.inventory.is_empty() {
+        println!("3. Use an item from your inventory")
+    } else {
+        println!("Your inventory is empty !")
+    }
+
+    let mut choice = String::new();
+
+    io::stdin()
+        .read_line(&mut choice)
+        .expect("Failed to read choice");
+
+    let choice = choice.trim();
+
+    match choice {
+        "1" => {
+            let damages = player.attack();
+            if opponent.dodge {
+                opponent.dodge = false;
+                println!("{} dodged {}'s attack !", opponent.name, player.name);
+            } else {
+                opponent.health -= damages;
+                println!(
+                    "{} has attacked {} and made {} damages points",
+                    player.name, opponent.name, damages
+                );
+            }
+        }
+        "2" => {
+            let dodge = player.dodge();
+            if dodge {
+                player.dodge = true;
+                println!("{} will dodge next attack !", player.name);
+            } else {
+                println!("{} failed to dodge next attack !", player.name);
+            }
+        }
+        _ => {
+            eprintln!("Choice not valid");
+        }
+    }
+}
+
 fn main() {
-    let player1 = create_player_from_stdin(1);
-    let player2 = create_player_from_stdin(2);
+    let mut player1 = create_player_from_stdin(1);
+    let mut player2 = create_player_from_stdin(2);
+    let mut turn: u32 = 0;
 
     println!("{player1}");
     println!("{player2}");
+    println!();
+
+    while player1.health > 0 && player2.health > 0 {
+        if turn % 2 == 0 {
+            play_tour(&mut player1, &mut player2);
+        } else {
+            play_tour(&mut player2, &mut player1);
+        }
+        turn += 1;
+    }
+    if player1.health < 0 {
+        println!("{} wins !", player2.name)
+    } else {
+        println!("{} wins !", player1.name)
+    }
 }
