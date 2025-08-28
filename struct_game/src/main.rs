@@ -129,36 +129,39 @@ fn create_player_from_stdin(player_number: u32) -> Player {
             }
         };
     }
+
+    let mut attr_rng = rand::rng();
+
     if choice == 1 {
         return Player::new(
             name,
             vec![
-                Item {
-                    name: String::from("Sword"),
-                    item_type: ItemType::Weapon,
-                    effect: rand::rng().random_range(5..=25),
-                },
-                Item {
-                    name: String::from("Life potion"),
-                    item_type: ItemType::Health,
-                    effect: rand::rng().random_range(25..=50),
-                },
+                Item::new(
+                    String::from("Sword"),
+                    ItemType::Weapon,
+                    attr_rng.random_range(5..=25),
+                ),
+                Item::new(
+                    String::from("Life potion"),
+                    ItemType::Health,
+                    attr_rng.random_range(25..=50),
+                ),
             ],
         );
     }
     return Player::new(
         name,
         vec![
-            Item {
-                name: String::from("Poison potion"),
-                item_type: ItemType::Weapon,
-                effect: rand::rng().random_range(10..=20),
-            },
-            Item {
-                name: String::from("Dodge potion"),
-                item_type: ItemType::Weapon,
-                effect: rand::rng().random_range(10..=35),
-            },
+            Item::new(
+                String::from("Poison Potion"),
+                ItemType::Weapon,
+                attr_rng.random_range(10..=20),
+            ),
+            Item::new(
+                String::from("Dodge potion"),
+                ItemType::Weapon,
+                attr_rng.random_range(10..=35),
+            ),
         ],
     );
 }
@@ -182,10 +185,13 @@ fn play_tour(player: &mut Player, opponent: &mut Player) {
         .read_line(&mut choice)
         .expect("Failed to read choice");
 
-    let choice = choice.trim();
+    let choice = choice
+        .trim()
+        .parse()
+        .expect(&format!("Failed to parse {}'s choice", player.name));
 
     match choice {
-        "1" => {
+        1 => {
             let damages = player.attack();
             if opponent.dodge {
                 opponent.dodge = false;
@@ -198,7 +204,7 @@ fn play_tour(player: &mut Player, opponent: &mut Player) {
                 );
             }
         }
-        "2" => {
+        2 => {
             let dodge = player.dodge();
             if dodge {
                 player.dodge = true;
