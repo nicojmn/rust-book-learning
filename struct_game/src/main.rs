@@ -85,61 +85,82 @@ impl Item {
 }
 
 fn create_player_from_stdin(player_number: u32) -> Player {
-    println!("Enter player {player_number} name :");
-
     let mut name = String::new();
-    let mut choice_inv = String::new();
+    let mut choice: i32 = 0;
+    let mut valid_name = false;
+    let mut valid_inv = false;
 
-    io::stdin()
-        .read_line(&mut name)
-        .expect(&format!("Failed to get player {player_number} name"));
+    while !valid_name {
+        println!("Enter player {player_number} name :");
 
-    name = name.trim().to_string();
+        name = String::new();
 
-    loop {
+        io::stdin()
+            .read_line(&mut name)
+            .expect(&format!("Failed to get player {player_number} name"));
+
+        name = name.trim().to_string();
+
+        valid_name = !name.trim().is_empty() && name.is_ascii()
+    }
+
+    while !valid_inv {
         println!("Choose your inventory : ");
         println!("1. Sword and life potion");
         println!("2. Poison potion and dodge potion");
+
+        let mut choice_inv = String::new();
 
         io::stdin()
             .read_line(&mut choice_inv)
             .expect("Please enter a valid number");
 
-        choice_inv = choice_inv.trim().to_string();
-
-        if choice_inv == "1" {
-            return Player::new(
-                name,
-                vec![
-                    Item {
-                        name: String::from("Sword"),
-                        item_type: ItemType::Weapon,
-                        effect: rand::rng().random_range(5..=25),
-                    },
-                    Item {
-                        name: String::from("Life potion"),
-                        item_type: ItemType::Health,
-                        effect: rand::rng().random_range(25..=50),
-                    },
-                ],
-            );
-        }
+        let _: i32 = match choice_inv.trim().parse() {
+            Ok(number) => {
+                if number > 0 && number < 3 {
+                    valid_inv = true;
+                    choice = number;
+                }
+                number
+            }
+            Err(e) => {
+                eprintln!("Wrong number : {e}");
+                continue;
+            }
+        };
+    }
+    if choice == 1 {
         return Player::new(
             name,
             vec![
                 Item {
-                    name: String::from("Poison potion"),
+                    name: String::from("Sword"),
                     item_type: ItemType::Weapon,
-                    effect: rand::rng().random_range(10..=20),
+                    effect: rand::rng().random_range(5..=25),
                 },
                 Item {
-                    name: String::from("Dodge potion"),
-                    item_type: ItemType::Weapon,
-                    effect: rand::rng().random_range(10..=35),
+                    name: String::from("Life potion"),
+                    item_type: ItemType::Health,
+                    effect: rand::rng().random_range(25..=50),
                 },
             ],
         );
     }
+    return Player::new(
+        name,
+        vec![
+            Item {
+                name: String::from("Poison potion"),
+                item_type: ItemType::Weapon,
+                effect: rand::rng().random_range(10..=20),
+            },
+            Item {
+                name: String::from("Dodge potion"),
+                item_type: ItemType::Weapon,
+                effect: rand::rng().random_range(10..=35),
+            },
+        ],
+    );
 }
 
 fn play_tour(player: &mut Player, opponent: &mut Player) {
