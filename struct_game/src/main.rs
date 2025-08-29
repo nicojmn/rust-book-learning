@@ -1,5 +1,5 @@
 use rand::{self, Rng, random_bool};
-use std::{fmt, io};
+use std::{cmp, fmt, io};
 
 const MAX_HEALTH: i32 = 100;
 
@@ -36,8 +36,10 @@ impl Player {
         }
     }
 
-    fn attack(&self) -> i32 {
-        rand::rng().random_range(0..=15) + self.next_tour
+    fn attack(&mut self) -> i32 {
+        let damages = rand::rng().random_range(0..=15) + self.next_tour;
+        self.next_tour = 0;
+        damages
     }
 
     fn dodge(&self) -> bool {
@@ -49,12 +51,13 @@ impl Player {
             let item = self.inventory.get(index).expect("Failed to get type");
             match item.item_type {
                 ItemType::Health => {
-                    self.health += item.effect;
+                    self.health = cmp::min(self.health + item.effect, MAX_HEALTH);
                 }
                 ItemType::Weapon => {
                     self.next_tour = item.effect;
                 }
             }
+            self.inventory.remove(index);
         }
         Ok(())
     }
@@ -247,6 +250,22 @@ fn play_tour(player: &mut Player, opponent: &mut Player) {
                 println!("{} will dodge next attack !", player.name);
             } else {
                 println!("{} failed to dodge next attack !", player.name);
+            }
+        }
+
+        3 => {
+            if player.inventory.len() == 0 {
+                eprintln!("Your inventory is empty !")
+            } else {
+                let index = item_choice(player);
+                match player.use_item(index) {
+                    Ok(()) => {
+                        println!("Sucessfully")
+                    }
+                    Err(e) => {
+                        eprintln!("{}", e)
+                    }
+                }
             }
         }
         _ => {
