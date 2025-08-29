@@ -74,6 +74,19 @@ impl fmt::Display for Player {
     }
 }
 
+impl fmt::Display for ItemType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::Weapon => {
+                write!(f, "Weapon")
+            }
+            Self::Health => {
+                write!(f, "Health")
+            }
+        }
+    }
+}
+
 impl Item {
     fn new(name: String, item_type: ItemType, effect: i32) -> Item {
         Item {
@@ -164,6 +177,29 @@ fn create_player_from_stdin(player_number: u32) -> Player {
             ),
         ],
     );
+}
+
+fn item_choice(player: &mut Player) -> usize {
+    println!("Select an item from your inventory :");
+    let mut choice = String::new();
+
+    for i in 0..player.inventory.len() {
+        let item = player.inventory.get(i).expect("Failed to retrieve item");
+        println!(
+            "{} : {} (type : {}, effect : {})",
+            i + 1,
+            item.name,
+            item.item_type,
+            item.effect
+        );
+    }
+
+    io::stdin()
+        .read_line(&mut choice)
+        .expect("Failed to retrieve item choice");
+
+    let choice: usize = choice.trim().parse().expect("Failed to parse item choice");
+    choice - 1
 }
 
 fn play_tour(player: &mut Player, opponent: &mut Player) {
