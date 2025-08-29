@@ -7,6 +7,7 @@ const MAX_HEALTH: i32 = 100;
 enum ItemType {
     Health,
     Weapon,
+    Dodge,
 }
 
 #[derive(Debug)]
@@ -14,6 +15,7 @@ struct Player {
     name: String,
     health: i32,
     attack_bonus: i32,
+    dodge_bonus: f64,
     dodge: bool,
     inventory: Vec<Item>,
 }
@@ -31,6 +33,7 @@ impl Player {
             name: name,
             health: MAX_HEALTH,
             attack_bonus: 0,
+            dodge_bonus: 0.0,
             dodge: false,
             inventory: invetory,
         }
@@ -42,8 +45,10 @@ impl Player {
         damages
     }
 
-    fn dodge(&self) -> bool {
-        random_bool(0.5)
+    fn dodge(&mut self) -> bool {
+        let prob = random_bool(0.5 + self.dodge_bonus / 100 as f64);
+        self.dodge_bonus = 0.0;
+        prob
     }
 
     fn use_item(&mut self, index: usize) -> Result<(), std::io::Error> {
@@ -55,6 +60,9 @@ impl Player {
                 }
                 ItemType::Weapon => {
                     self.attack_bonus = item.effect;
+                }
+                ItemType::Dodge => {
+                    self.dodge_bonus = item.effect as f64;
                 }
             }
             self.inventory.remove(index);
@@ -83,10 +91,13 @@ impl fmt::Display for ItemType {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Weapon => {
-                write!(f, "Weapon")
+                write!(f, "Weapon bonus")
             }
             Self::Health => {
-                write!(f, "Health")
+                write!(f, "Health restore")
+            }
+            Self::Dodge => {
+                write!(f, "Dodge bonus")
             }
         }
     }
@@ -177,7 +188,7 @@ fn create_player_from_stdin(player_number: u32) -> Player {
             ),
             Item::new(
                 String::from("Dodge potion"),
-                ItemType::Weapon,
+                ItemType::Dodge,
                 attr_rng.random_range(10..=35),
             ),
         ],
