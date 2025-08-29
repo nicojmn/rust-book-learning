@@ -47,7 +47,7 @@ impl Player {
     }
 
     fn use_item(&mut self, index: usize) -> Result<(), std::io::Error> {
-        if self.inventory.len() > 0 && self.inventory.len() - 1 > index {
+        if self.inventory.len() > 0 && self.inventory.len() > index {
             let item = self.inventory.get(index).expect("Failed to get type");
             match item.item_type {
                 ItemType::Health => {
@@ -58,6 +58,8 @@ impl Player {
                 }
             }
             self.inventory.remove(index);
+        } else {
+            return Err(io::Error::new(io::ErrorKind::InvalidInput, "Invalid index"));
         }
         Ok(())
     }
