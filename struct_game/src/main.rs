@@ -13,7 +13,7 @@ enum ItemType {
 struct Player {
     name: String,
     health: i32,
-    next_tour: i32,
+    attack_bonus: i32,
     dodge: bool,
     inventory: Vec<Item>,
 }
@@ -30,15 +30,15 @@ impl Player {
         Player {
             name: name,
             health: MAX_HEALTH,
-            next_tour: 0,
+            attack_bonus: 0,
             dodge: false,
             inventory: invetory,
         }
     }
 
     fn attack(&mut self) -> i32 {
-        let damages = rand::rng().random_range(0..=15) + self.next_tour;
-        self.next_tour = 0;
+        let damages = rand::rng().random_range(0..=15) + self.attack_bonus;
+        self.attack_bonus = 0;
         damages
     }
 
@@ -54,7 +54,7 @@ impl Player {
                     self.health = cmp::min(self.health + item.effect, MAX_HEALTH);
                 }
                 ItemType::Weapon => {
-                    self.next_tour = item.effect;
+                    self.attack_bonus = item.effect;
                 }
             }
             self.inventory.remove(index);
